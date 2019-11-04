@@ -1,0 +1,109 @@
+#include "fstream"
+#include "CorrFit.h"
+// #### CFIncludeList ####
+// #### SMIncludeList ####
+#include "ReadPar.h"
+#include "StandAloneFsiLednicky.h"
+#include "StandAloneFSIPratt.h"
+#include "StandAloneFsiKisiel.h"
+
+using namespace std;
+
+ReadPar *sRPInstance;
+STR      sRPFileName;
+TFile   *sOutFile;
+STR      sOutFileName;
+STR      sCFFitterName;
+STR      sSourceModelName;
+STR      sWeightCalcName;
+
+void ReadParameters()
+{
+  try {
+    sOutFileName = sRPInstance->getPar("OutResultFileNamePrefix");
+    PRINT_MESSAGE("of " << (sOutFileName.Data()));
+    sOutFileName    += ".root";
+    PRINT_MESSAGE("of " << (sOutFileName.Data()));
+    sCFFitterName    = sRPInstance->getPar("CorrelationFitter");
+    sSourceModelName = sRPInstance->getPar("SourceModel");
+    sWeightCalcName  = sRPInstance->getPar("FsiCalculator");
+  }
+  catch (int e) {
+    PRINT_DEBUG("CorrFit::ReadParameters - Caught exception " << e);
+    PRINT_MESSAGE("Did not find one of the neccessary parameters in the parameters file.");
+    PRINT_MESSAGE("Please see edit the file \"" << sRPFileName.Data() << "\" and add the missing data");
+    exit(0);
+  }
+}
+
+void GenerateParameterSub()
+{
+  ofstream *os;
+  
+  PRINT_MESSAGE("Parameter file not found.");
+  PRINT_MESSAGE("Generating a stub parameter file \"" << sRPFileName.Data() << "\"");
+  PRINT_MESSAGE("Please edit it and fill all the fileds.");
+  os = new ofstream(sRPFileName.Data());
+  
+  (*os) 
+    << "# This is a stub parameter file" << endl 
+    << "# Fill the values and run the program again" << endl << endl;
+  (*os) 
+    << "# This is the list of available correlation fitters" << endl
+    //#### CFList ####
+    << "CorrelationFitter = " << endl;
+  (*os) 
+    << "# This is the list of available source models" << endl
+    //#### SMList ####
+    << "SourceModel = " << endl;
+  (*os) 
+    << "# This is the list of available weight generators" << endl
+    << "# FsiLednicky - an FSI calculator from Richard Lednicky" << endl
+    << "# FsiPratt    - an FSI calculator from Scott Pratt" << endl
+    << "# FsiKisiel   - a simple FSI calculator for Coulomb and QS" << endl
+    << "FsiCalculator = " << endl;
+  (*os) 
+    << "# The name of the output file, which will contain all the results" << endl
+    << "OutResultFileNamePrefix = " << endl;
+}
+
+int main(int argc, char **argv)
+{
+  CFFitter    *tFitter;
+  SourceModel *tModel;
+
+  try {
+    if (argc > 1) 
+      sRPFileName = argv[1];
+    else
+      sRPFileName = "par.file";
+    sRPInstance = new ReadPar(sRPFileName.Data());
+    if (argc > 2)
+      sRPInstance->parseOptString(argv[2]);
+  }
+  catch (int e) {
+    PRINT_DEBUG("Caught: " << e);
+    PRINT_MESSAGE("No Par File. Generating the stub...");
+    GenerateParameterSub();
+    exit(3);
+  }
+
+  ReadParameters();
+  
+  sOutFile = new TFile(sOutFileName.Data(),"recreate");
+  
+  //### SMCreate ###
+  CFFitter::SetSourceModel(tModel);
+  //### CFCreate ###
+  tFitter->Initialize();
+  tFitter->Fit();
+  sOutFile->cd();
+
+  tFitter->Write();
+
+  sOutFile->Close();
+  
+  return 0;
+};
+
+

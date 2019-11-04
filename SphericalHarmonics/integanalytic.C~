@@ -1,0 +1,51 @@
+TF1 *funexcc00phi;
+TF1 *funaprc00phi;
+
+TGraph *grpexcc00phi;
+
+TGraph *getgrpfromfun(TF1 *fun, Double_t rmin, Double_t rmax) {
+  Double_t xy[100];
+  Double_t yk[100];
+  
+  for (int iter=0; iter<100; iter++) {
+    xy[iter] = rmin + ((rmax-rmin)*iter)/100.0 + (rmax-rmin)/200.0;
+    yk[iter] = fun->Eval(xy[iter]);
+
+    //    cout << iter << " " << xy[iter] << " " << yk[iter] << endl;
+  }
+
+  TGraph * gra = new TGraph(100,xy,yk);
+
+  return gra;
+}
+
+void integanalytic()
+{
+  double Rout  = 0.9/0.197327;
+  double Rside = 0.8/0.197327;
+  double Rlong = 1.1/0.197327;
+  double qinv  = 0.23;
+
+  funexcc00phi = new TF1("funexcc00phi","exp(-[0]*([1]*[1]*cos(x)*cos(x) + [2]*[2]*sin(x)*sin(x)))");
+  funexcc00phi->SetRange(0.0,TMath::Pi()*2);
+  
+  funexcc00phi->SetParameter(0,qinv*qinv);
+  funexcc00phi->SetParameter(1,Rout);
+  funexcc00phi->SetParameter(2,Rside);
+
+  grpexcc00phi = getgrpfromfun(funexcc00phi, 0.0, TMath::Pi()*2);
+
+  funaprc00phi = new TF1("funaprc00phi","[0]+[1]*cos([2]*x)");
+  funaprc00phi->SetParameters(1.0,-0.1,1.0);
+  funaprc00phi->SetLineStyle(2);
+  funaprc00phi->SetLineColor(2);
+  funaprc00phi->SetRange(0.0,TMath::Pi()*2);
+
+  //  grpexcc00phi->Fit(funaprc00phi);
+
+  Double_t kk = qinv*qinv;
+  Double_t av = 0.5*(exp(-kk*Rout*Rout) + exp(-kk*Rside*Rside));
+  Double_t bv = 0.5*(exp(-kk*Rout*Rout) - exp(-kk*Rside*Rside));
+
+  funaprc00phi->SetParameters(av, bv, 2.0);
+}

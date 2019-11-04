@@ -1,0 +1,38 @@
+# This is a stub parameter file
+# Fill the values and run the program again
+
+# This is the list of available correlation fitters
+# CFFitter1DHBT
+# CFFitterNonId
+# CFFitterNonIdMult
+# CFFitterQuad
+# CFFitterSH
+CorrelationFitter = 
+# This is the list of available source models
+# SourceModelCMSHyperBlast
+# SourceModelCMSHyperBt
+# SourceModelCMSHyper
+# SourceModelCMSHyperExpRQMD
+# SourceModelCMSHyperRQMD
+# SourceModelEHRInvShift
+# SourceModelExpGausRInv
+# SourceModelGausCMS
+# SourceModelGaus
+# SourceModelGausLCMS
+# SourceModelGausRInv
+# SourceModelGausRInvJacobian
+# SourceModelGausRInvShift
+# SourceModelGausROut
+# SourceModelGausROutDouble
+# SourceModelGausROutFile
+# SourceModelGausROutSourceCMS
+# SourceModelGausROutTwo
+# SourceModelGausRStar
+SourceModel = 
+# This is the list of available weight generators
+# FsiLednicky - an FSI calculator from Richard Lednicky
+# FsiPratt    - an FSI calculator from Scott Pratt
+# FsiKisiel   - a simple FSI calculator for Coulomb and QS
+FsiCalculator = 
+# The name of the output file, which will contain all the results
+OutResultFileNamePrefix = 

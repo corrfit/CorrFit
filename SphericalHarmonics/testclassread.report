@@ -1,0 +1,196 @@
+==6083== Memcheck, a memory error detector.
+==6083== Copyright (C) 2002-2007, and GNU GPL'd, by Julian Seward et al.
+==6083== Using LibVEX rev 1732, a library for dynamic binary translation.
+==6083== Copyright (C) 2004-2007, and GNU GPL'd, by OpenWorks LLP.
+==6083== Using valgrind-3.2.3, a dynamic binary instrumentation framework.
+==6083== Copyright (C) 2000-2007, and GNU GPL'd, by Julian Seward et al.
+==6083== For more details, rerun with: -v
+==6083== 
+Warning in <TH1::Build>: Replacing existing histogram: CovNumPionCYlm (Potential memory leak).
+Warning in <TH1::Build>: Replacing existing histogram: CovDenPionCYlm (Potential memory leak).
+==6083== 
+==6083== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 3 from 1)
+==6083== malloc/free: in use at exit: 4,037,455 bytes in 45,599 blocks.
+==6083== malloc/free: 426,222 allocs, 380,623 frees, 60,348,010 bytes allocated.
+==6083== For counts of detected errors, rerun with: -v
+==6083== searching for pointers to 45,599 not-freed blocks.
+==6083== checked 9,700,296 bytes.
+==6083== 
+==6083== 3 bytes in 1 blocks are definitely lost in loss record 2 of 133
+==6083==    at 0x4C1F996: malloc (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x5EB1341: G__memfunc_para_setup (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5EB1811: G__parse_parameter_link (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5EB1C05: G__memfunc_setup (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x8A00036: G__cpp_setup_func2() (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A00A64: G__cpp_setup_funcG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A02C04: G__cpp_setupG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x5E989DD: G__call_setup_funcs (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5E98BD1: G__main (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5E9AA0A: G__init_cint (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x560DB3F: TCint::ResetAll() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x560E831: TCint::TCint(char const*, char const*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083== 
+==6083== 
+==6083== 51 (48 direct, 3 indirect) bytes in 1 blocks are definitely lost in loss record 51 of 133
+==6083==    at 0x4C1F996: malloc (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x5E4CF54: G__free_ifunc_table (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5E98ADC: G__main (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5E9AA0A: G__init_cint (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x560DB3F: TCint::ResetAll() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x560E831: TCint::TCint(char const*, char const*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55C7768: TROOT::TROOT(char const*, char const*, void (**)()) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55C89DE: ROOT::GetROOT() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55E71DE: TTimer::Reset() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55E7C22: TTimer::TTimer(long, bool) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55E7D32: __static_initialization_and_destruction_0(int, int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x59A0585: (within /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083== 
+==6083== 
+==6083== 200 bytes in 1 blocks are definitely lost in loss record 59 of 133
+==6083==    at 0x4C1FE45: operator new[](unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x55F3254: TArrayI::Set(int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x559AE7B: TColor::SetPalette(int, int*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55D62F4: TStyle::Reset(char const*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55D7E6D: TStyle::TStyle(char const*, char const*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55D85B4: TStyle::BuildStyles() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55C84EB: TROOT::TROOT(char const*, char const*, void (**)()) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55C89DE: ROOT::GetROOT() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55E71DE: TTimer::Reset() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55E7C22: TTimer::TTimer(long, bool) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55E7D32: __static_initialization_and_destruction_0(int, int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x59A0585: (within /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083== 
+==6083== 
+==6083== 376 bytes in 1 blocks are possibly lost in loss record 63 of 133
+==6083==    at 0x4C201A5: operator new(unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x55CBFF8: TStorage::ObjectAlloc(unsigned long) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x40265E: TObject::operator new(unsigned long) (TObject.h:156)
+==6083==    by 0x573D5EC: ROOT::TQObjectInitBehavior::CreateClass(char const*, short, std::type_info const&, TVirtualIsAProxy*, void (*)(void*, TMemberInspector&, char*), char const*, char const*, int, int) const (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x56273CC: ROOT::TGenericClassInfo::GetClass() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x574CDFE: TQObject::Class() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55BDFB9: TQObject::GetListOfClassSignals() const (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55BF782: TQObject::Emit(char const*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55BF9E5: TQObject::~TQObject() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55E7F82: __tcf_0 (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x97DA98B: __cxa_finalize (in /lib64/libc-2.4.so)
+==6083==    by 0x558B382: (within /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083== 
+==6083== 
+==6083== 1,242 bytes in 34 blocks are possibly lost in loss record 82 of 133
+==6083==    at 0x4C201A5: operator new(unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x911F530: std::string::_Rep::_S_create(unsigned long, unsigned long, std::allocator<char> const&) (in /usr/lib64/libstdc++.so.6.0.8)
+==6083==    by 0x9120034: (within /usr/lib64/libstdc++.so.6.0.8)
+==6083==    by 0x91201E1: std::string::string(char const*, std::allocator<char> const&) (in /usr/lib64/libstdc++.so.6.0.8)
+==6083==    by 0x561BF8B: TClass::AddClass(TClass*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x561D870: TClass::Init(char const*, short, std::type_info const*, TVirtualIsAProxy*, void (*)(void*, TMemberInspector&, char*), char const*, char const*, int, int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x561E120: TClass::TClass(char const*, short, std::type_info const&, TVirtualIsAProxy*, void (*)(void*, TMemberInspector&, char*), char const*, char const*, int, int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x561E2C3: ROOT::CreateClass(char const*, short, std::type_info const&, TVirtualIsAProxy*, void (*)(void*, TMemberInspector&, char*), char const*, char const*, int, int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x56273CC: ROOT::TGenericClassInfo::GetClass() (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x678966E: TFile::Class() (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x672E794: TFile::Init(bool) (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x672FB77: TFile::TFile(char const*, char const*, char const*, int) (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083== 
+==6083== 
+==6083== 3,440 bytes in 26 blocks are possibly lost in loss record 87 of 133
+==6083==    at 0x4C1FE45: operator new[](unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x6749B69: TStreamerInfo::Compile() (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x674A28F: TStreamerInfo::BuildOld() (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x5614A92: TClass::GetStreamerInfo(int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x674A2F1: TStreamerInfo::BuildOld() (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x5614A92: TClass::GetStreamerInfo(int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x674A2F1: TStreamerInfo::BuildOld() (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x5614A92: TClass::GetStreamerInfo(int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x674A2F1: TStreamerInfo::BuildOld() (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x5614A92: TClass::GetStreamerInfo(int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x6716494: TBufferFile::WriteFastArray(void**, TClass const*, int, bool, TMemberStreamer*) (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x677FA5A: int TStreamerInfo::WriteBufferAux<char**>(TBuffer&, char** const&, int, int, int, int) (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083== 
+==6083== 
+==6083== 13,472 bytes in 842 blocks are definitely lost in loss record 92 of 133
+==6083==    at 0x4C201A5: operator new(unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x5F049A2: G__search_tagname (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5EA5D9B: G__get_linked_tagnum (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5EA78D0: G__get_linked_tagnum_fwd (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x89D1AC1: G__cpp_setup_tagtableG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A02BE6: G__cpp_setupG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x5E989DD: G__call_setup_funcs (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x8A0A68F: G__cpp_setup_initG__Physics::G__cpp_setup_initG__Physics() (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A63: __static_initialization_and_destruction_0(int, int) (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A90: _GLOBAL__I__ZN4ROOT20GenerateInitInstanceEPK15TFeldmanCousins (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A0D8A5: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89B1BC2: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083== 
+==6083== 
+==6083== 13,472 bytes in 842 blocks are definitely lost in loss record 93 of 133
+==6083==    at 0x4C201A5: operator new(unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x5F04989: G__search_tagname (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5EA5D9B: G__get_linked_tagnum (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x5EA78D0: G__get_linked_tagnum_fwd (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x89D1AC1: G__cpp_setup_tagtableG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A02BE6: G__cpp_setupG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x5E989DD: G__call_setup_funcs (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x8A0A68F: G__cpp_setup_initG__Physics::G__cpp_setup_initG__Physics() (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A63: __static_initialization_and_destruction_0(int, int) (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A90: _GLOBAL__I__ZN4ROOT20GenerateInitInstanceEPK15TFeldmanCousins (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A0D8A5: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89B1BC2: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083== 
+==6083== 
+==6083== 42,048 (13,280 direct, 28,768 indirect) bytes in 415 blocks are definitely lost in loss record 99 of 133
+==6083==    at 0x4C1F996: malloc (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x5EAC847: G__inheritance_setup (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x8A02711: G__cpp_setup_inheritanceG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A02BEB: G__cpp_setupG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x5E989DD: G__call_setup_funcs (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x8A0A68F: G__cpp_setup_initG__Physics::G__cpp_setup_initG__Physics() (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A63: __static_initialization_and_destruction_0(int, int) (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A90: _GLOBAL__I__ZN4ROOT20GenerateInitInstanceEPK15TFeldmanCousins (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A0D8A5: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89B1BC2: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083== 
+==6083== 
+==6083== 48,678 (22,944 direct, 25,734 indirect) bytes in 478 blocks are definitely lost in loss record 100 of 133
+==6083==    at 0x4C1F996: malloc (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x5EB2009: G__memfunc_setup (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x8A00036: G__cpp_setup_func2() (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A00A64: G__cpp_setup_funcG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A02C04: G__cpp_setupG__Physics (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x5E989DD: G__call_setup_funcs (in /usr/local/CERN/root.5.16.00/lib/libCint.so)
+==6083==    by 0x8A0A68F: G__cpp_setup_initG__Physics::G__cpp_setup_initG__Physics() (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A63: __static_initialization_and_destruction_0(int, int) (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A90: _GLOBAL__I__ZN4ROOT20GenerateInitInstanceEPK15TFeldmanCousins (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A0D8A5: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89B1BC2: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083== 
+==6083== 
+==6083== 333,388 bytes in 6,794 blocks are possibly lost in loss record 106 of 133
+==6083==    at 0x4C1FE45: operator new[](unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x55CD390: TStringRef::GetRep(int, int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55CD8DF: TString::TString(char const*) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x55FB8D8: TClassTable::Add(char const*, short, std::type_info const&, void (*)(), int) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x89CDCC5: ROOT::GenerateInitInstanceLocal(TFeldmanCousins const*) (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D19B7: __static_initialization_and_destruction_0(int, int) (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89D1A90: _GLOBAL__I__ZN4ROOT20GenerateInitInstanceEPK15TFeldmanCousins (in /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x8A0D8A5: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083==    by 0x89B1BC2: (within /usr/local/CERN/root.5.16.00/lib/libPhysics.so)
+==6083== 
+==6083== 
+==6083== 335,152 (1,872 direct, 333,280 indirect) bytes in 2 blocks are definitely lost in loss record 107 of 133
+==6083==    at 0x4C201A5: operator new(unsigned long) (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==6083==    by 0x55CBFF8: TStorage::ObjectAlloc(unsigned long) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x40265E: TObject::operator new(unsigned long) (TObject.h:156)
+==6083==    by 0x6E685AC: ROOT::new_TH3D(void*) (in /usr/local/CERN/root.5.16.00/lib/libHist.so)
+==6083==    by 0x56181DB: TClass::New(TClass::ENewType) (in /usr/local/CERN/root.5.16.00/lib/libCore.so)
+==6083==    by 0x673D519: TKey::ReadObj() (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x6723725: TDirectoryFile::Get(char const*) (in /usr/local/CERN/root.5.16.00/lib/libRIO.so)
+==6083==    by 0x408430: CorrFctnDirectYlm::ReadFromFile(TFile*, char const*, int) (CorrFctnDirectYlm.cxx:803)
+==6083==    by 0x4025D7: main (testclassread.cxx:17)
+==6083== 
+==6083== LEAK SUMMARY:
+==6083==    definitely lost: 65,291 bytes in 2,582 blocks.
+==6083==    indirectly lost: 387,785 bytes in 1,452 blocks.
+==6083==      possibly lost: 338,446 bytes in 6,855 blocks.
+==6083==    still reachable: 3,245,933 bytes in 34,710 blocks.
+==6083==         suppressed: 0 bytes in 0 blocks.
+==6083== Reachable blocks (those to which a pointer was found) are not shown.
+==6083== To see them, rerun with: --leak-check=full --show-reachable=yes

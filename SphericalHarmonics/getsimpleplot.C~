@@ -1,0 +1,14 @@
+#include <TH1D.h>
+#include "sf.h"
+
+int main(int argc, char **argv)
+{
+  TH2D *histil = new TH2D("histil","histil",100,-0.2, 0.2, 100, -0.2, 0.2);
+  
+  for (int ix=1; ix<=histil->GetNbinsX(); ix++) {
+    double ko = histil->GetXaxis()->GetBinCenter(ix);
+    for (int iy=1; iy<=histil->GetNbinsY(); iy++) {
+      double ks = histil->GetYaxis()->GetBinCenter(iy);
+    }
+  }
+}

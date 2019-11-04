@@ -1,0 +1,380 @@
+#ifdef MYSQLSTORAGE
+
+#include "CFStorageMySQL.h"
+#include "stdlib.h"
+#include <sstream>
+
+extern ReadPar *sRPInstance;
+extern STR      sRPFileName;
+#define MAXQUERYSTRING 10000
+
+CFStorageMySQL::CFStorageMySQL()
+{
+  ReadParameters();
+  connection = mysql_init(NULL);
+  connection = mysql_real_connect(connection, mDBHost.Data(), mDBUser.Data(), mDBPass.Data(), "CFStorage", 0, NULL, 0);
+  PRINT_MESSAGE("DB Connection " << connection);
+  mPairCount = 0;
+  mNFitBins = 0;
+  mNParameters = 0;
+}
+
+CFStorageMySQL::~CFStorageMySQL()
+{
+  mysql_close(connection);
+}
+
+int      
+CFStorageMySQL::SetPairName(const char *aPairName)
+{
+  int tCurCount=0;
+
+  while (tCurCount < mPairCount) {
+    if (!(strcmp(mPairName[tCurCount], aPairName))) {
+      return tCurCount;
+    }
+    tCurCount++;
+  }
+
+  if (mPairCount > 3)
+    {
+      PRINT_MESSAGE("Why do You want to store more than four pair types at the same time?");
+      PRINT_MESSAGE("This is unsupported - Aborting.");
+      exit(0);
+    }
+  
+  mPairSystemID[mPairCount] = GetSingleID("PairTypes","pairTypeID","pairTypeName",aPairName);
+  mPairName[mPairCount] = aPairName;
+
+  mPairCount++;
+  
+  return (mPairCount-1);
+}
+
+void      
+CFStorageMySQL::SetCalculationParameters(int aPairNumber, int aStr, int aCoul, int aQS)
+{
+  MYSQL_RES *tRes;
+  MYSQL_ROW tRow;
+  char tQString[200];
+  int tNRows;
+
+  snprintf(tQString, 200, "SELECT interactionID FROM Interactions WHERE Strong = %i AND Coulomb = %i AND QuantumStatistics = %i", aStr, aCoul, aQS);
+  
+  mysql_query(connection, tQString);
+  tRes = mysql_store_result(connection);
+  tNRows = mysql_num_rows(tRes);
+  if (!tNRows) 
+    {
+      PRINT_MESSAGE("Cannot get/store interaction type " << aStr << aCoul << aQS << " - Aborting");
+      exit(0);
+    }
+
+  tRow = mysql_fetch_row(tRes);
+  mInteractionID = atoi(tRow[0]);
+}
+
+void      
+CFStorageMySQL::SetStoreParameters(int aPairNumber,
+				   const char *aModelName,
+				   int aNModelParameters,
+				   int aNFitBin,
+				   double aFitMin,
+				   double aFitMax,
+				   double aNormMin,
+				   double aNormMax,
+				   double aMomResScale,
+				   const char *aPairHash,
+				   int aPairCount)
+{
+  MYSQL_RES *tRes;
+  MYSQL_ROW tRow;
+  char tQString[400];
+  int tNRows;
+
+  mNParameters = aNModelParameters;
+  mNFitBins = aNFitBin;
+  
+  // Get Model ID
+  mSourceModelID = GetSingleID("SourceModels","sourceModelID","sourceModelName",aModelName);
+
+  // Get Fit Parameters ID
+  snprintf(tQString, 400, "SELECT fitParameterID FROM FitParameters WHERE fitBinsCount = %i AND fitMin='%.3lf' AND fitMax='%.3lf' AND normMin='%.3lf' AND normMax='%.3lf' AND momResScale='%.3lf'\0", aNFitBin, aFitMin, aFitMax, aNormMin, aNormMax, aMomResScale);
+  
+  PRINT_DEBUG_3(tQString);
+  
+  mysql_query(connection, tQString);
+  tRes = mysql_store_result(connection);
+  tNRows = mysql_num_rows(tRes);
+  if (!tNRows)                           
+    // No Pair in database. Need to add it
+    {
+      snprintf(tQString, 300, "INSERT INTO FitParameters (fitBinsCount, fitMin, fitMax, normMin, normMax, momResScale) VALUES (%i, '%.3lf', '%.3lf', '%.3lf', '%.3lf', '%.3lf')", aNFitBin, aFitMin, aFitMax, aNormMin, aNormMax, aMomResScale);
+      mysql_query(connection, tQString);
+      tRes = mysql_store_result(connection);
+      
+      snprintf(tQString, 300, "SELECT fitParameterID FROM FitParameters WHERE fitBinsCount = %i AND fitMin='%.3lf' AND fitMax='%.3lf' AND normMin='%.3lf' AND normMax='%.3lf' AND momResScale='%.3lf'\0", aNFitBin, aFitMin, aFitMax, aNormMin, aNormMax, aMomResScale);
+      
+      mysql_query(connection, tQString);
+      tRes = mysql_store_result(connection);
+      tNRows = mysql_num_rows(tRes);
+      if (!tNRows) 
+	{
+	  PRINT_MESSAGE("Cannot get/store FitParameters " << aNFitBin << " " << aFitMax << " " << aFitMin << " Aborting");
+	  exit(0);
+	}
+    }
+  tRow = mysql_fetch_row(tRes);
+  mFitParameterID = atoi(tRow[0]);
+
+  // Get Pair Hash ID
+  snprintf(tQString, 400, "SELECT pairHashID FROM PairHashes WHERE sampleHash LIKE '%s' AND pairCount = %i", aPairHash, aPairCount);
+  
+  mysql_query(connection, tQString);
+  tRes = mysql_store_result(connection);
+  tNRows = mysql_num_rows(tRes);
+  if (!tNRows)                           
+    // No Pair in database. Need to add it
+    {
+      snprintf(tQString, 400, "INSERT INTO PairHashes (sampleHash, pairCount) VALUES ('%s', %i)", aPairHash, aPairCount);
+      mysql_query(connection, tQString);
+      tRes = mysql_store_result(connection);
+      
+      snprintf(tQString, 400, "SELECT pairHashID FROM PairHashes WHERE sampleHash LIKE '%s' AND pairCount = %i", aPairHash, aPairCount);
+      
+      mysql_query(connection, tQString);
+      tRes = mysql_store_result(connection);
+      tNRows = mysql_num_rows(tRes);
+      if (!tNRows) 
+	{
+	  PRINT_MESSAGE("Cannot get/store PairHash" << aPairHash << " Aborting");
+	  exit(0);
+	}
+    }
+  tRow = mysql_fetch_row(tRes);
+  if (atoi(tRow[0]) == 0)
+    {
+      PRINT_DEBUG_2("Wrong pairHashID = 0!");
+      PRINT_DEBUG_2("Query used was: " << tQString);
+      
+    }
+  
+  mPairHashID[aPairNumber] = atoi(tRow[0]);
+}
+
+void      
+CFStorageMySQL::GetStoredFunction(int aPairNumber, 
+				  double *aParameterValues,
+				  TVectorD **aContent, 
+				  TVectorD **aError) throw(CF_Storage_Exception)
+{
+  MYSQL_RES *tRes;
+  MYSQL_ROW tRow;
+  char tQString[300];
+  int tNRows;
+  double value;
+  double *tBuffer;
+  
+  int tSMParID = GetSMParametersID(aPairNumber, aParameterValues);
+ 
+  snprintf(tQString, 300, "SELECT functionDataID, data FROM FunctionData WHERE modelParameterID = %i AND pairHashID = %i AND fitParameterID = %i AND interactionID = %i AND pairTypeID = %i", tSMParID, mPairHashID[aPairNumber], mFitParameterID, mInteractionID, mPairSystemID[aPairNumber]);
+  
+  mysql_query(connection, tQString);
+  tRes = mysql_store_result(connection);
+  tNRows = mysql_num_rows(tRes);
+  if (!tNRows)                           
+    throw CF_STORAGE_EXCEPTION_NO_ENTRY;
+
+  tRow = mysql_fetch_row(tRes);
+  istringstream *indata = new istringstream(tRow[1]);
+  
+  tBuffer = new double[mNFitBins];
+  
+  for (int ival=0; ival<mNFitBins; ival++)
+    {
+      (*indata) >> tBuffer[ival];
+      tBuffer[ival] += 1.0;
+    }
+  (*aContent) = new TVectorD(mNFitBins, tBuffer);
+  for (int ival=0; ival<mNFitBins; ival++)
+    {
+      (*indata) >> tBuffer[ival];
+    }
+  (*aError)   = new TVectorD(mNFitBins, tBuffer);
+  delete tBuffer;
+}
+
+void      
+CFStorageMySQL::StoreFunction(int aPairNumber, 
+			      double *aParameterValues,
+			      TVectorD *aContent, 
+			      TVectorD *aError) throw(CF_Storage_Exception)
+{
+  MYSQL_RES *tRes;
+  MYSQL_ROW tRow;
+  char tQString[MAXQUERYSTRING];
+  char tValString[MAXQUERYSTRING] = "";
+  char tVal[20];
+  int tNRows;
+
+  int tSMParID = GetSMParametersID(aPairNumber, aParameterValues);
+  
+  for (int ival=0; ival<mNFitBins; ival++)
+    {
+      sprintf(tVal, " %.8e", ((*aContent)[ival]-1.0));
+      strcat(tValString, tVal);
+    }
+  for (int ival=0; ival<mNFitBins; ival++)
+    {
+      sprintf(tVal, " %.4e", (*aError)[ival]);
+      strcat(tValString, tVal);
+    }
+  snprintf(tQString, MAXQUERYSTRING, "INSERT INTO FunctionData (modelParameterID, pairHashID, fitParameterID, interactionID, pairTypeID, data) VALUES (%i, %i, %i, %i, %i, '%s')", tSMParID, mPairHashID[aPairNumber], mFitParameterID, mInteractionID, mPairSystemID[aPairNumber], tValString);
+  PRINT_DEBUG_3(tQString);
+  
+  mysql_query(connection, tQString);
+  tRes = mysql_store_result(connection);
+}
+
+int  
+CFStorageMySQL::GetSMParametersID(int aPairNumber, double *aParameterValues)
+{
+  MYSQL_RES *tRes;
+  MYSQL_ROW tRow;
+  char tQString[600];
+  char tParString[600] = "";
+  char tAddString[600];
+  int tNRows = 0;
+
+  // Get Model Value Parameters ID
+  for (int inpar = 0; inpar < 10; inpar++)
+  {
+    char tParStr[80];
+    snprintf(tParStr, 80, " AND parameter%i='%.3lf' ", (inpar+1), (inpar < mNParameters) ? aParameterValues[inpar] : 0);
+    
+    strcat(tParString, tParStr);
+  }
+
+  snprintf(tQString, 600, "SELECT modelParameterID FROM ModelParameters WHERE sourceModelID = %i %s", mSourceModelID, tParString);
+
+  mysql_query(connection, tQString);
+  PRINT_DEBUG_3(tQString);
+
+  strcpy(tParString, "");
+  tRes = mysql_store_result(connection);
+  if (tRes)
+    tNRows = mysql_num_rows(tRes);
+  if (!tNRows)                           
+    // No Values in database. Need to add them
+    {
+      for (int inpar = 0; inpar < 10; inpar++)
+      {
+	char tParStr[80];
+	snprintf(tParStr, 80, " , '%.3lf'", (inpar < mNParameters) ? (aParameterValues[inpar]) : 0.0);
+	strcat(tParString, tParStr);
+      }
+
+      snprintf(tAddString, 600, "INSERT INTO ModelParameters (sourceModelID, parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7, parameter8, parameter9, parameter10) VALUES (%i %s)", mSourceModelID, tParString);
+      mysql_query(connection, tAddString);
+      tRes = mysql_store_result(connection);
+       
+      PRINT_DEBUG_3(tAddString);
+
+      mysql_query(connection, tQString);
+      tRes = mysql_store_result(connection);
+      tNRows = mysql_num_rows(tRes);
+      if (!tNRows) 
+	{
+	  PRINT_MESSAGE("Cannot get/store ModelParameters " << mSourceModelID << " " << aParameterValues[0] << " Aborting");
+	  exit(0);
+	}
+    }
+  tRow = mysql_fetch_row(tRes);
+  return atoi(tRow[0]);
+}
+
+void
+CFStorageMySQL::ReadParameters()
+{
+  STR fVar;
+
+  try 
+    {
+      mDBHost = sRPInstance->getPar("StorageDBHost");
+      mDBUser = sRPInstance->getPar("StorageDBUser");
+      mDBPass = sRPInstance->getPar("StorageDBPass");
+    }
+  catch (STR e)
+    {
+      PRINT_MESSAGE("Error reading parameters in CFStorageMySQL <readParameters>: " << e);
+      PRINT_MESSAGE("Cannot continue with DB Storagge");
+      PRINT_MESSAGE("Please add parameters: StorageDBHost StorageDBUser StorageDBPass to the parameter file");
+      PRINT_MESSAGE("Exiting");
+      exit(0);
+    }
+}
+
+
+int  
+CFStorageMySQL::GetSingleID(const char *aTable, const char *aIFField, const char *aField, const char *aValue)
+{
+  MYSQL_RES *tRes;
+  MYSQL_ROW tRow;
+  char tQString[300];
+  int tNRows;
+
+  snprintf(tQString, 300, "SELECT %s FROM %s WHERE %s = '%s'", aIFField, aTable, aField, aValue);
+  mysql_query(connection, tQString);
+  tRes = mysql_store_result(connection);
+  tNRows = mysql_num_rows(tRes);
+  if (!tNRows)                           
+    // No Pair in database. Need to add it
+    {
+      snprintf(tQString, 300, "INSERT INTO %s (%s) VALUES ('%s')", aTable, aField, aValue);
+      mysql_query(connection, tQString);
+      tRes = mysql_store_result(connection);
+      
+      snprintf(tQString, 300, "SELECT %s FROM %s WHERE %s = '%s'", aIFField, aTable, aField, aValue);
+      
+      mysql_query(connection, tQString);
+      tRes = mysql_store_result(connection);
+      tNRows = mysql_num_rows(tRes);
+      if (!tNRows) 
+	{
+	  PRINT_MESSAGE("Cannot get/store " << aField << " " << aValue << " Aborting");
+	  exit(0);
+	}
+    }
+  tRow = mysql_fetch_row(tRes);
+  return atoi(tRow[0]);
+}
+
+
+// void CFStorageMySQL::OpenFile()
+// {
+//   mStorage = new TFile(mFileName.Data(), "UPDATE");
+//   if (!(mStorage && mStorage->IsOpen()))
+//     mStorage = new TFile(mFileName.Data(), "RECREATE");
+// }
+
+
+// void CFStorageMySQL::ChangeToCurrentDir(int aPairNumber)
+// {
+//   if (mPairCount) 
+//     if (mPairName[aPairNumber] != "") {
+//       mStorage->cd();
+//       if (!(mDirPair[aPairNumber] || (mDirPair[aPairNumber] = (TDirectory *) mStorage->Get(mPairName[aPairNumber].Data())))) {
+// 	mDirPair[aPairNumber] = mStorage->mkdir(mPairName[aPairNumber].Data());
+//       }
+//       if (mCalcPar[aPairNumber] != "") {
+// 	PRINT_DEBUG_3("Getting " << mCalcPar[aPairNumber].Data());
+	
+// 	if (!(mDirCalc[aPairNumber] || (mDirCalc[aPairNumber] = (TDirectory *) mDirPair[aPairNumber]->Get(mCalcPar[aPairNumber].Data())))) {
+// 	  mDirCalc[aPairNumber] = mDirPair[aPairNumber]->mkdir(mCalcPar[aPairNumber].Data());
+// 	}
+//       }
+//     }
+// }
+
+
+#endif

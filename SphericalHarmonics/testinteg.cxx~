@@ -1,0 +1,74 @@
+// Testing the integral of S*K by decomposing S and K into 
+// spherical harmonics and then summing over the same 
+// components
+
+#include "TF3.h"
+#include "CorrFctnDirectYlm.h"
+#include "TRandom2.h"
+#include "TH3D.h"
+#include "TMath.h"
+#define NSAMPLES 1000000
+#define NBINS 80
+#define RMAX 10.0
+
+int main(int argc, char **argv)
+{
+  TF3 *funK = new TF3("funK","cos([0]*x+[1]*y+[2]*z)");
+  TF3 *funS = new TF3("funS","exp(-x*x/([0]*[0])-y*y/([1]*[1])-z*z/([2]*[2]))");
+  funK->SetParameters(0.15, 0.01, 0.05);
+  funS->SetParameters(2.0*5.0/0.197327, 2.0*3.0/0.197327, 20*7.5/0.197327);
+
+  TRandom2 *fRand = new TRandom2();
+  fRand->SetSeed(323341);
+
+  CorrFctnDirectYlm *fS = new CorrFctnDirectYlm("Sfun",2,NBINS,0.0,RMAX);
+  CorrFctnDirectYlm *fK = new CorrFctnDirectYlm("Kfun",2,NBINS,0.0,RMAX);
+
+  CorrFctnDirectYlm *fU = new CorrFctnDirectYlm("Ufun",2,NBINS,0.0,RMAX);
+
+  double skav = 0.0;
+  int nsample = 0;
+  for (int iter=0; iter<NSAMPLES; iter++) {
+    double x = fRand->Rndm()*2*RMAX-RMAX;
+    double y = fRand->Rndm()*2*RMAX-RMAX;
+    double z = fRand->Rndm()*2*RMAX-RMAX;
+
+    if (sqrt(x*x+y*y+z*z) < RMAX) {
+      skav += funK->Eval(x,y,z)*funS->Eval(x,y,z);
+      fS->AddRealPair(x,y,z,funS->Eval(x,y,z));
+      fK->AddRealPair(x,y,z,funK->Eval(x,y,z));
+      fU->AddRealPair(x,y,z,1.0);
+      nsample++;
+    }
+  }
+  
+  Double_t integ = skav*(4*TMath::Pi()*RMAX*RMAX*RMAX/3.0)/nsample;
+
+  cout << "Integral is " << integ << endl;
+
+  double sumsk = 0.0;
+  double sumu = 0.0;
+  for (int ibin=1; ibin<=NBINS; ibin++) {
+    double er = fS->GetNumRealHist(0,0)->GetXaxis()->GetBinCenter(ibin);
+    // Sum over all lm's
+    int el=0, em=0;
+    for (int ilm=0; ilm<9; ilm++) {
+      sumsk += er*er*er*er*(fS->GetNumRealHist(el,em)->GetBinContent(ibin))*(fK->GetNumRealHist(el,em)->GetBinContent(ibin));
+      sumsk -= er*er*er*er*(fS->GetNumImagHist(el,em)->GetBinContent(ibin))*(fK->GetNumImagHist(el,em)->GetBinContent(ibin));
+      sumu += er*er*fU->GetNumRealHist(el, em)->GetBinContent(ibin);
+      em++;
+      if (em>el) { el++; em=-el; };
+    }
+  }
+
+  Double_t integylm = sumsk*NBINS/nsample/nsample;
+  cout << "Integral from SK decomposition is " << integylm << endl;
+  cout << "Ration Difference Relative " << integylm/integ << " " << (integylm - integ) << " " << (integylm - integ)/integylm << endl;
+
+  cout << "Sumu is " << sumu << " " << sumu/nsample << endl;
+
+  TFile *ofile = new TFile("outinteg.root","RECREATE");
+  fS->Write();
+  fK->Write();
+  
+}

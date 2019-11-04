@@ -1,0 +1,152 @@
+#ifndef SCOTTUTILS_YLM_CC__
+#define SCOTTUTILS_YLM_CC__
+#include "sf.h"
+#include <TMath.h>
+#include <Math/SpecFunc.h>
+
+using namespace std;
+
+long int fact[14] = { 1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600, 1932053504};
+
+complex<double> ceiphi(double phi){
+  return complex<double>(cos(phi),sin(phi));
+}
+
+double SpherHarmonics::legendre(int ell,double ctheta){
+  return gsl_sf_legendre_Pl(ell,ctheta);
+}
+
+double SpherHarmonics::norm_legendre(int ell,int em, double ctheta){
+  double legpar = TMath::Sqrt((2*ell+1)/(4*TMath::Pi()));
+  double legsil = TMath::Sqrt(1.0*fact[ell-em]/fact[ell+em]);
+  if (abs(em) % 2) legpar *= -1.0;
+  
+  return legpar*legsil*ROOT::Math::assoc_legendre(ell, em, ctheta);
+}
+
+complex<double> SpherHarmonics::Ylm(int ell,int m,double theta,double phi){
+  double ctheta;
+  complex<double> answer;
+  complex<double> ci(0.0,1.0);
+  ctheta=cos(theta);
+  //  answer=gsl_sf_legendre_sphPlm(ell,abs(m),ctheta)*ceiphi(m*phi);
+  //answer=ROOT::Math::assoc_legendre(ell,abs(m),ctheta)*ceiphi(m*phi);
+  answer = norm_legendre(ell, abs(m), ctheta)*ceiphi(m*phi);
+  //  if(m<0) answer=answer*pow(-1.0,abs(m));
+  if (m<0) {
+    if (abs(m) % 2) answer *= -1.0;
+  }
+  return answer;
+}
+
+complex<double> SpherHarmonics::Ylm(int ell, int m, double x, double y, double z){
+  complex<double> answer;
+  double ctheta,phi;
+  double r = sqrt(x*x+y*y+z*z);
+  if ( r < 1e-10 || fabs(z) < 1e-10 ) ctheta = 0.0;
+  else ctheta=z/r;
+  phi=atan2(y,x);
+  answer = norm_legendre(ell, abs(m), ctheta)*ceiphi(m*phi);
+  //  answer=gsl_sf_legendre_sphPlm(ell,abs(m),ctheta)*ceiphi(m*phi);
+  //answer=ROOT::Math::assoc_legendre(ell,abs(m),ctheta)*ceiphi(m*phi);
+  //  if(m<0) answer=answer*pow(-1.0,abs(m));
+  if (m<0) {
+    if (abs(m) % 2) answer *= -1.0;
+  }
+  return answer;	
+}
+
+void SpherHarmonics::YlmUpToL(int lmax, double x, double y, double z, complex<double> *ylms)
+{
+  complex<double> answer;
+  double ctheta,phi;
+  int lcur = 0;  
+  double lpol;
+  
+  double coss[lmax];
+  double sins[lmax];
+
+  double r = sqrt(x*x+y*y+z*z);
+  if ( r < 1e-10 || fabs(z) < 1e-10 ) ctheta = 0.0;
+  else ctheta=z/r;
+  phi=atan2(y,x);
+  
+  for (int iter=1; iter<=lmax; iter++) {
+    coss[iter-1] = cos(iter*phi);
+    sins[iter-1] = sin(iter*phi);
+  }
+  ylms[lcur++] = norm_legendre(0, 0, ctheta)*complex<double>(1,0);
+  //  ylms[lcur++] = gsl_sf_legendre_sphPlm(0, 0, ctheta) * complex<double>(1,0);
+  
+  for (int il = 1; il<=lmax; il++) {
+    for (int im=0; im<=il; im++) {
+      //      lpol = ROOT::Math::assoc_legendre(il, im, ctheta);
+      //      lpol = gsl_sf_legendre_sphPlm(il, im, ctheta);
+      lpol = norm_legendre(il, im, ctheta);
+      if (im) {
+	ylms[lcur+il+im] = lpol*complex<double>(coss[im-1],sins[im-1]);
+	if (im%2)
+	  ylms[lcur+il-im] = -lpol*complex<double>(coss[im-1],-sins[im-1]);
+	else
+	  ylms[lcur+il-im] = lpol*complex<double>(coss[im-1],-sins[im-1]);
+      }
+      else {
+	ylms[lcur+il] = lpol*complex<double>(1,0);
+      }
+    }
+    lcur += 2*il + 1;
+  }
+}
+
+void SpherHarmonics::YlmUpToL(int lmax, double ctheta, double phi, complex<double> *ylms)
+{
+  int lcur = 0;  
+  double lpol;
+  
+  double coss[lmax];
+  double sins[lmax];
+
+  for (int iter=1; iter<=lmax; iter++) {
+    coss[iter-1] = cos(iter*phi);
+    sins[iter-1] = sin(iter*phi);
+  }
+  ylms[lcur++] = norm_legendre(0, 0, ctheta)*complex<double>(1,0);
+  //  ylms[lcur++] = gsl_sf_legendre_sphPlm(0, 0, ctheta) * complex<double>(1,0);
+  
+  for (int il = 1; il<=lmax; il++) {
+    for (int im=0; im<=il; im++) {
+      //      lpol = ROOT::Math::assoc_legendre(il, im, ctheta);
+      //      lpol = gsl_sf_legendre_sphPlm(il, im, ctheta);
+      lpol = norm_legendre(il, im, ctheta);
+      if (im) {
+	ylms[lcur+il+im] = lpol*complex<double>(coss[im-1],sins[im-1]);
+	if (im%2)
+	  ylms[lcur+il-im] = -lpol*complex<double>(coss[im-1],-sins[im-1]);
+	else
+	  ylms[lcur+il-im] = lpol*complex<double>(coss[im-1],-sins[im-1]);
+      }
+      else {
+	ylms[lcur+il] = lpol*complex<double>(1,0);
+      }
+    }
+    lcur += 2*il + 1;
+  }
+}
+
+double SpherHarmonics::ReYlm(int ell, int m, double theta, double phi){
+	return real(SpherHarmonics::Ylm(ell,m,theta,phi));
+}
+
+double SpherHarmonics::ImYlm(int ell, int m, double theta, double phi){
+	return imag(SpherHarmonics::Ylm(ell,m,theta,phi));
+}
+
+double SpherHarmonics::ReYlm(int ell, int m, double x,double y,double z){
+	return real(SpherHarmonics::Ylm(ell,m,x,y,z));
+}
+
+double SpherHarmonics::ImYlm(int ell, int m, double x,double y,double z){
+	return imag(SpherHarmonics::Ylm(ell,m,x,y,z));
+}
+
+#endif

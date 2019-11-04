@@ -1,0 +1,4 @@
+1 NQMAX
+10 DELQ
+1.0 EPSILON
+parameters/qarray_pk.dat QARRAYFILENAME

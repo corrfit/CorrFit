@@ -1,0 +1,209 @@
+void checknan(TH1D *hist)
+{
+  for (int ib=1; ib<5; ib++) {
+    if ((TMath::IsNaN(hist->GetBinContent(ib))) || 
+	(TMath::IsNaN(hist->GetBinError(ib)))) {
+      hist->SetBinContent(ib, 0.0);
+      hist->SetBinError(ib, 0.0);
+    }
+      
+  }
+}
+
+void plotylms()
+{
+  gStyle->SetOptStat(1000000001);
+  TIter gdiriter(gDirectory->GetListOfKeys());
+  TObject *cur;
+  char *buf;
+  char  suff[500];
+  char  lbuf[500];
+  char  nbuf[500];
+  suff[0] = '\0';
+
+  while (cur = gdiriter()) {
+    buf = cur->GetName();
+    if (strstr(buf, "CfnReYlm00")) {
+      cout << "Found suffix " << buf+10 << endl;
+      strcpy(suff, buf+10);
+      break;
+    }
+  }
+
+  if (!suff[0]) {
+    cout << "Did not find suffix" << endl;
+    return;
+  }
+
+  int maxl = 0;
+  gdiriter->Reset();
+  while (cur = gdiriter()) {
+    buf = cur->GetName();
+    if ((strstr(buf, "CfnReYlm")) && (strstr(buf, suff))){
+      cout << "Found l " << buf+8 << endl;
+      strncpy(lbuf, buf+8,1);
+      lbuf[1] = '\0';
+      int lcur = atoi(lbuf);
+      cout << "Found l " << lcur << endl;
+      if (lcur > maxl) maxl = lcur;
+    }
+  }
+  cout << "Maximum l " << maxl << endl;
+  
+
+  int ilmcount= 0;
+  TH1D **cfnsr;
+  cfnsr = malloc(sizeof(TH1D *) * (maxl+1)*(maxl+1));
+  TH1D **cfnsi;
+  cfnsi = malloc(sizeof(TH1D *) * (maxl+1)*(maxl+1));
+  for (int il=0; il<=maxl; il++)
+    for (int im=0; im<=il; im++) {
+      sprintf(nbuf, "CfnReYlm%i%i%s", il, im, suff);
+      cfnsr[ilmcount] = new TH1D(*((TH1D *) gDirectory->Get(nbuf)));
+      checknan(cfnsr[ilmcount]);
+
+      sprintf(nbuf, "CfnImYlm%i%i%s", il, im, suff);
+      cfnsi[ilmcount] = new TH1D(*((TH1D *) gDirectory->Get(nbuf)));
+      checknan(cfnsi[ilmcount]);
+
+      ilmcount++;
+    }
+
+  TLine *l1 = new TLine(0.0, 1.0, cfnsr[0]->GetXaxis()->GetXmax(), 1.0);
+  l1->SetLineColor(14);
+  l1->SetLineStyle(2);
+  
+  TLine *l0 = new TLine(0.0, 0.0, cfnsr[0]->GetXaxis()->GetXmax(), 0.0);
+  l0->SetLineColor(14);
+  l0->SetLineStyle(2);
+  
+  TCanvas *canylm = new TCanvas("canylm","canylm",1600,800);
+  gPad->SetFillColor(0);
+  gPad->SetFillStyle(4000);
+  canylm->Divide(5, 2, 0.0001, 0.0001);
+  for (int ilm=0; ilm<(maxl+1)*(maxl+2)/2; ilm++) {
+    cout << "Drawing " << ilm << endl;
+
+    canylm->cd(ilm+1);
+    gPad->SetFillColor(0);
+    gPad->SetFillStyle(4000);
+    gPad->SetTopMargin(0.01);
+    gPad->SetRightMargin(0.01);
+
+    cfnsr[ilm]->SetTitle("");
+    cfnsr[ilm]->SetMarkerColor(2);
+    cfnsr[ilm]->SetMarkerSize(0.8);
+    cfnsr[ilm]->SetMarkerStyle(8);
+    cfnsr[ilm]->Draw();
+
+    cout << "Drawn " << ilm << endl;
+    
+    cfnsi[ilm]->SetTitle("");
+    cfnsi[ilm]->SetMarkerColor(4);
+    cfnsi[ilm]->SetMarkerSize(0.8);
+    cfnsi[ilm]->SetMarkerStyle(8);
+    cfnsi[ilm]->Draw("SAME");
+    
+    cout << "Drawn " << ilm << endl;
+    if (ilm)
+      l0->Draw();
+    else
+      l1->Draw();
+
+  }
+  
+  TLatex lat;
+  lat.SetTextSize(0.12);
+
+  TCanvas *canylms = new TCanvas("canylms","canylms",1100,900);
+  gPad->SetFillColor(0);
+  gPad->SetFillStyle(4000);
+  canylms->Divide(1, 4, 0.0001, 0.0001);
+  
+  int el = 0;
+  int em = 0;
+
+  TPad *pads[4];
+
+  for (int ilm=0; ilm<(maxl+1)*(maxl+2)/2; ilm++) {
+    TPad *curpad;
+
+    cout << "Plotting " << el << " " << em << " "<< ilm << endl;
+    
+    //    cout << curpad << endl;
+    canylms->cd(el+1);
+    //    cout << curpad << endl;
+    if (em == 0) {
+      if (el==0)
+	gPad->Divide(2,1,0.0001,0.0001);
+      if (el == 1)
+	gPad->Divide(2,1,0.0001,0.0001);
+      if (el == 2)
+	gPad->Divide(3,1,0.0001,0.0001);
+      if (el == 3)
+	gPad->Divide(4,1,0.0001,0.0001);
+      //    cout << curpad << endl;
+      curpad = gPad;
+      //    cout << curpad << endl;
+
+//       if ((el==0) && (em==0)) {
+// 	curpad->cd(2);
+// 	lat.DrawLatex(0.2, 0.8, "C_{0}^{0}");
+// 	lat.DrawLatex(0.2, 0.6, "C_{1}^{0}");
+// 	lat.DrawLatex(0.5, 0.6, "C_{1}^{1}");
+// 	lat.DrawLatex(0.2, 0.4, "C_{2}^{0}");
+// 	lat.DrawLatex(0.4, 0.4, "C_{2}^{1}");
+// 	lat.DrawLatex(0.6, 0.4, "C_{2}^{2}");
+// 	lat.DrawLatex(0.2, 0.2, "C_{3}^{0}");
+// 	lat.DrawLatex(0.35, 0.2, "C_{3}^{1}");
+// 	lat.DrawLatex(0.5, 0.2, "C_{3}^{2}");
+// 	lat.DrawLatex(0.65, 0.2, "C_{3}^{3}");
+// 	lat.SetTextColor(2);
+// 	lat.DrawLatex(0.35, 0.8, "real part");
+// 	lat.SetTextColor(4);
+// 	lat.DrawLatex(0.6, 0.8, "imaginary part");
+//       }
+    }
+    
+    //    cout << curpad << endl;
+    canylms->GetPad(el+1)->cd(em+1);
+    //    cout << curpad << endl;
+    
+    cout << "Drawing " << ilm << endl;
+
+    //    canylms->cd(ilm+1);
+    gPad->SetFillColor(0);
+    gPad->SetFillStyle(4000);
+    gPad->SetTopMargin(0.01);
+    gPad->SetRightMargin(0.01);
+
+    cfnsr[ilm]->SetTitle("");
+    cfnsr[ilm]->SetMarkerColor(2);
+    cfnsr[ilm]->SetMarkerSize(0.8);
+    cfnsr[ilm]->SetMarkerStyle(8);
+    cfnsr[ilm]->Draw();
+
+    cout << "Drawn " << ilm << endl;
+    
+    cfnsi[ilm]->SetTitle("");
+    cfnsi[ilm]->SetMarkerColor(4);
+    cfnsi[ilm]->SetMarkerSize(0.8);
+    cfnsi[ilm]->SetMarkerStyle(8);
+    cfnsi[ilm]->Draw("SAME");
+    
+    cout << "Drawn " << ilm << endl;
+    if (ilm)
+      l0->Draw();
+    else
+      l1->Draw();
+
+    em++;
+    if (em>el) {
+      el++;
+      em = 0;
+    }
+  }
+  
+//   canylms->SaveAs("canylms.eps");
+//   canylms->SaveAs("canylms.png");
+}

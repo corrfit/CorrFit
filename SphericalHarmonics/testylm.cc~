@@ -1,0 +1,45 @@
+#include <math.h>
+#include <iostream>
+#include "sf.h"
+
+using namespace std;
+
+int main(int argc, char **argv)
+{
+  double x = 0.2;
+  double y = 0.5;
+  double z = 0.1;
+
+  if (argc > 1) {
+    x = atof(argv[1]);
+    y = atof(argv[2]);
+    z = atof(argv[3]);
+  }
+
+  complex<double> ret00 = SpherHarmonics::Ylm(0, 0, x, y, z);
+  complex<double> ret10 = SpherHarmonics::Ylm(1, 0, x, y, z);
+  complex<double> ret11 = SpherHarmonics::Ylm(1, 1, x, y, z);
+  complex<double> ret12 = SpherHarmonics::Ylm(1, -1, x, y, z);
+  complex<double> ret20 = SpherHarmonics::Ylm(2, 0, x, y, z);
+  complex<double> ret21 = SpherHarmonics::Ylm(2, 1, x, y, z);
+  complex<double> ret22 = SpherHarmonics::Ylm(2, 2, x, y, z);
+  complex<double> ret23 = SpherHarmonics::Ylm(2, -1, x, y, z);
+  complex<double> ret24 = SpherHarmonics::Ylm(2, -2, x, y, z);
+  
+  cout << "theta phi " << z/sqrt(x*x+y*y+z*z) << " " << atan2(y,x) << endl;
+
+  cout << "leg " << gsl_sf_legendre_sphPlm(2, 2, z/sqrt(x*x+y*y+z*z)) << endl;
+  cout << "leg " << gsl_sf_legendre_sphPlm(2, 2, -z/sqrt(x*x+y*y+z*z)) << endl;
+
+  cout << "Ylm 0  0 is " << real(ret00) << " " << imag(ret00) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 1 -1 is " << real(ret12) << " " << imag(ret12) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 1  0 is " << real(ret10) << " " << imag(ret10) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 1  1 is " << real(ret11) << " " << imag(ret11) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 2 -2 is " << real(ret24) << " " << imag(ret24) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 2 -1 is " << real(ret23) << " " << imag(ret23) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 2  0 is " << real(ret20) << " " << imag(ret20) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 2  1 is " << real(ret21) << " " << imag(ret21) << " for " << x << " " << y << " " << z << endl;
+  cout << "Ylm 2  2 is " << real(ret22) << " " << imag(ret22) << " for " << x << " " << y << " " << z << endl;
+  
+  
+}

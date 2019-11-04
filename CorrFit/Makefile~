@@ -1,0 +1,107 @@
+# _________________________________________________________
+# --- FILE
+#
+# Source 
+SHELL = /bin/sh
+CC = g++
+#FF = g77
+FF = gfortran
+LD = g++
+
+binaries = bin/CorrFit.exe bin/GetMin.exe bin/CompareWeights.exe
+sources  = CorrFit.cxx CF.cxx ReadPar.cxx PairReader.cxx PairManager.cxx SourceModel.cxx SourceModelGaus.cxx Pair.cxx CalcCF.cxx CalcCFNonId.cxx CFFitter.cxx CFFitterNonId.cxx StandAloneFsiLednicky.cxx SourceModelGausROut.cxx SourceModelGausROutTwo.cxx ExpCF.cxx ExpCFNonId.cxx CFStorage.cxx CFFitter1DHBT.cxx CalcCF1DHBT.cxx ExpCF1DHBT.cxx CFFitterNonIdMult.cxx Chi2Map.cxx SourceModelGausROutFile.cxx WeightCalculator.cxx StandAloneFSIPratt.cxx SourceModelGausRStar.cxx SourceModelGausROutDouble.cxx SourceModelGausROutSourceCMS.cxx CFStorageMySQL.cxx SourceModelCMSHyper.cxx SourceModelCMSHyperBlast.cxx SourceModelCMSHyperBt.cxx SourceModelGausCMS.cxx SourceModelCMSHyperRQMD.cxx SourceModelCMSHyperExpRQMD.cxx SourceModelGausRInv.cxx SourceModelGausRInvJacobian.cxx SourceModelGausRInvShift.cxx SourceModelGausLCMS.cxx SourceModelEHRInvShift.cxx StandAloneFsiKisiel.cxx  ExpCFQuad.cxx CalcCFQuad.cxx CFFitterQuad.cxx SourceModelExpGausRInv.cxx CalcCFSH.cxx ExpCFSH.cxx CFFitterSH.cxx
+minsources = GetMin.cxx
+compsources = CompareWeights.cxx PairReader.cxx PairManager.cxx SourceModel.cxx Pair.cxx  StandAloneFsiLednicky.cxx WeightCalculator.cxx SourceModelGausRInvJacobian.cxx SourceModelExpGausRInv.cxx StandAloneFsiKisiel.cxx 
+
+#fsources = FsiTools.F FsiWeightLednicky2.F 
+fsources = FsiTools.F FsiWeightLednicky4.F 
+objects  = $(sources:.cxx=.o) $(fsources:.F=.o)
+deps     = $(addprefix obj/,$(objects))
+
+minobjects  = $(minsources:.cxx=.o) 
+mindeps     = $(addprefix obj/,$(minobjects))
+
+compobjects  = $(compsources:.cxx=.o) $(fsources:.F=.o)
+compdeps     = $(addprefix obj/,$(compobjects))
+
+fitters  = CFFitter*.cxx
+models   = SourceModel*.cxx
+
+mysqlcxx = 
+mysqlld  = 
+
+shcxx	= -I../SphericalHarmonics
+shld	= ../SphericalHarmonics/ylm.o ../SphericalHarmonics/CorrFctnDirectYlm.o -lgsl -lgslcblas
+
+#
+# _________________________________________________________
+# --- OPTION
+#
+ifeq ($(FULLOPT),1)
+OPTIMIZATION = -O3
+else
+OPTIMIZATION = -O0 -g
+endif
+
+ifeq ($(MYSQLSTORAGE),1)
+OPTIMIZATION += -DMYSQLSTORAGE 
+mysqlcxx = -I'/usr/include/mysql'
+mysqlld  = -L'/usr/lib64/mysql' -lmysqlclient -lz -lcrypt -lnsl -lm
+endif
+
+ifeq ($(C2MRANDOM),1)
+OPTIMIZATION += -DRANDOMC2MORDER
+endif
+
+CPPOPT = -Wno-deprecated -I${ROOTSYS}/include ${shcxx} ${mysqlcxx}
+COPTN = -c -D_GCC$(shell gcc -v 2>&1 | grep version | sed -e "s/.*version \(.\).*/\1/")_ ${OPTIMIZATION} ${CPPOPT} -D_DEBUG -D_DEBUG_LEVEL_=2
+COPT = -c -D_GCC$(shell gcc -v 2>&1 | grep version | sed -e "s/.*version \(.\).*/\1/")_ ${OPTIMIZATION} ${CPPOPT} -D_DEBUG_ -D_DEBUG_LEVEL_=2
+FOPT = -c -D_GCC$(shell gcc -v 2>&1 | grep version | sed -e "s/.*version \(.\).*/\1/")_ ${OPTIMIZATION} -D_DEBUG_ -D_DEBUG_LEVEL_=2
+LLIB = -L${ROOTSYS}/lib -L${ROOTSYS}/lib/root -lNew -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMinuit -lm -ldl -rdynamic -lgcc `root-config --libs --cflags`
+#-L${CERN_ROOT}/lib -lkernlib -lmathlib -lpacklib 
+#LOPTN = ${OPTIMIZATION} ${mysqlld} ${shld} -lf2c
+#LOPT = ${OPTIMIZATION} ${mysqlld} ${shld} -lf2c
+LOPTN = ${OPTIMIZATION} ${mysqlld} ${shld} -lgfortran
+LOPT = ${OPTIMIZATION} ${mysqlld} ${shld} -lgfortran
+
+
+#
+# _________________________________________________________
+# --- RULE
+#
+
+bin/CorrFit.exe: $(deps)
+	$(LD) $(LOPT) -o $(EE) bin/CorrFit.exe $(deps) $(LLIB)
+
+bin/GetMin.exe: $(mindeps)
+	$(LD) $(LOPT) -o $@ $(mindeps) $(LLIB)
+
+bin/CompareWeights.exe: $(compdeps)
+	$(LD) $(LOPT) -o $@ $(compdeps) $(LLIB)
+
+bin/SourceFitO.exe: $(deps)
+	$(LD) $(LOPTO) -o $(EE) bin/SourceFitO.exe $(desp) $(LLIB)
+
+CorrFit.cxx: CorrFit.cxx.in makeCorrFit.pl $(fitters) $(models)
+	mkdir -p obj bin
+	./makeCorrFit.pl
+
+clean:
+	rm -f obj/*o bin/* *.d
+
+%.o: ../%.cxx
+	$(CC) -o $@ $< $(COPT)
+
+%.o: ../%.F
+	$(FF) -o $@ $< $(FOPT)
+
+%.d: %.cxx
+	$(SHELL) -ec '$(CC) -MM $(CPPOPT) $< | sed '\''s/\($*\)\.o[ :]*/obj\/\1.o $@ : /g'\'' > $@; [ -s $@ ] || rm -f $@'
+
+%.d: %.F
+	$(SHELL) -ec '$(FF) -MM $(CPPOPT) $< | sed '\''s/\($*\)\.o[ :]*/obj\/\1.o $@ : /g'\'' > $@; [ -s $@ ] || rm -f $@'
+
+include $(sources:.cxx=.d) $(fsources:.F=.d) $(minsources:.cxx=.d)
+
+package:
+	tar zcvf CorrFit.tar.gz --exclude CorrFit.cxx $(sources) $(fsources) $(minsources) $(sources:.cxx=.h) Makefile CFGlobal.h wf parameters PairSystems.h fortranc.h CorrFit.cxx.in makeCorrFit.pl  CFStorage.structure.sql
